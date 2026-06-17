@@ -1,0 +1,87 @@
+"""Request/response models shared across the API."""
+from typing import Optional, Literal
+from pydantic import BaseModel, Field
+
+
+# ---------- Generic ----------
+class DeviceRef(BaseModel):
+    ip: str = Field(..., description="Device IP address (used as the registry key)")
+
+
+class OkResponse(BaseModel):
+    ok: bool = True
+    detail: Optional[str] = None
+
+
+# ---------- LED (Tapo L530) ----------
+class LedRegister(BaseModel):
+    ip: str
+    email: str
+    password: str
+    name: Optional[str] = None
+
+
+class LedPower(BaseModel):
+    on: bool
+
+
+class LedBrightness(BaseModel):
+    brightness: int = Field(..., ge=1, le=100)
+
+
+class LedColor(BaseModel):
+    hue: int = Field(..., ge=0, le=360)
+    saturation: int = Field(..., ge=0, le=100)
+
+
+class LedColorTemp(BaseModel):
+    temp: int = Field(..., ge=2500, le=6500, description="Color temperature in Kelvin")
+
+
+# ---------- Air Purifier (Xiaomi MiIO) ----------
+class AirRegister(BaseModel):
+    ip: str
+    token: str = Field(..., description="32-char device token")
+    name: Optional[str] = None
+
+
+class AirPower(BaseModel):
+    on: bool
+
+
+class AirMode(BaseModel):
+    mode: Literal["Auto", "Silent", "Favorite", "Fan"]
+
+
+class AirFavoriteLevel(BaseModel):
+    level: int = Field(..., ge=1, le=14)
+
+
+class AirLedBrightness(BaseModel):
+    brightness: Literal["Bright", "Dim", "Off"]
+
+
+class AirToggle(BaseModel):
+    on: bool
+
+
+# ---------- CCTV (ONVIF + RTSP) ----------
+class CctvRegister(BaseModel):
+    ip: str
+    user: str
+    password: str
+    rtsp_port: int = 554
+    onvif_port: int = 2020
+    stream: str = "stream1"
+    name: Optional[str] = None
+
+
+class CctvMove(BaseModel):
+    x: float = Field(0.0, ge=-1.0, le=1.0, description="pan: -left .. +right")
+    y: float = Field(0.0, ge=-1.0, le=1.0, description="tilt: -down .. +up")
+    duration: float = Field(0.4, ge=0.05, le=3.0)
+
+
+class WebRTCOffer(BaseModel):
+    sdp: str
+    type: str
